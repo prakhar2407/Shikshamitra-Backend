@@ -20,7 +20,7 @@ import com.ncuindia.peermentoring.service.LinkService;
 // which eliminates the need to annotate every request handling method of the controller class
 // with @responsebody annotation
 @RestController
-@RequestMapping("/link")
+@RequestMapping("http://localhost:8080/api/auth/signin")
 public class LinkController {
 	private LinkService linkService;
 
