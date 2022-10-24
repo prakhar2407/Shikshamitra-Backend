@@ -1,0 +1,32 @@
+{"properties": [
+  {
+    "name": "spring.peermentor.secretkey",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.peermentor.secretkey'"
+  },
+  {
+    "name": "spring.peermentor.jwtExpiration",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.peermentor.jwtExpiration'"
+  },
+  {
+    "name": "spring.peermentor.jwtExpiration",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.peermentor.jwtExpiration'"
+  },
+  {
+    "name": "spring.peermentor.jwtExpiration",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.peermentor.jwtExpiration'"
+  },
+  {
+    "name": "spring.peermentor.jwtCookieName",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.peermentor.jwtCookieName'"
+  },
+  {
+    "name": "spring.peermentor.jwtExpiration",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.peermentor.jwtExpiration'"
+  }
+]}
