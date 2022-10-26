@@ -14,20 +14,21 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ncuindia.peermentoring.model.UserTable;
 import com.pie.dao.UserRepository;
 import com.pie.model.Role;
 import com.pie.model.User;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService{
-    @Autowired
-    private UserRepository userRepository;
+//    @Autowired
+//    private UserRepository userRepository;
     
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) {
     	
-        User user = userRepository.findByEmail(username);
+       UserTable user = userRepository.findByEmail(username);
         if (user == null) throw new UsernameNotFoundException(username);
 
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();  
@@ -35,7 +36,7 @@ public class UserDetailsServiceImpl implements UserDetailsService{
             grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
         }
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), grantedAuthorities);
+        return new org.springframework.security.core.userdetails.User(user.getEmailId(), user.getPassword(), grantedAuthorities);
     }
 
 	

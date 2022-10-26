@@ -15,7 +15,7 @@ import com.pie.model.User;
 @Service
 public class UserServiceImpl implements UserService {
     @Autowired
-    private UserRepository userRepository;
+    private User userRepository;
 //    @Autowired
 //    private RoleRepository roleRepository;
     
