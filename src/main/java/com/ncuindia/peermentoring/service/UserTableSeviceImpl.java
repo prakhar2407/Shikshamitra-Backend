@@ -21,7 +21,7 @@ public class UserTableSeviceImpl implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String emailId) throws UsernameNotFoundException {
         UserTable userTable = userTableRepository.findByEmailId(emailId)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + emailId));
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + emailId));
         return userTable;
     }
 

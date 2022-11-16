@@ -45,10 +45,14 @@ public class JwtUtils {
     }
 
     public ResponseCookie generateJwtCookie(UserTable userPrincipal) {
-        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
+        String jwt = generateTokenFromUsername(userPrincipal.getEmailId());
         ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt).path("/api").maxAge(24 * 60 * 60).httpOnly(true)
                 .build();
         return cookie;
+    }
+
+    public String generateJwtToken(UserTable userPrincipal) {
+        return generateTokenFromUsername(userPrincipal.getEmailId());
     }
 
     public ResponseCookie getCleanJwtCookie() {

@@ -4,8 +4,6 @@ import javax.persistence.Entity;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -20,8 +18,8 @@ public class ClassFeedback {
 	private int rating;
 	@Column(name = "FeedbackText")
 	private int feedbackText;
-	
-	
+
+
 	//mapping classschedule
 	// @ManyToOne
     // @JoinColumn(name="ClassScheduleId", nullable=false)
@@ -29,8 +27,8 @@ public class ClassFeedback {
 
     public ClassFeedback() {}
 
-    
-    
+
+
     //getter and setter
 	public String getClassId() {
 		return classId;
@@ -64,8 +62,8 @@ public class ClassFeedback {
 		this.feedbackText = feedbackText;
 	}
 
-    
-    
-    
-    
+
+
+
+
 }

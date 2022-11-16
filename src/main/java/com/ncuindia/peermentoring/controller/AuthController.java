@@ -1,7 +1,6 @@
 package com.ncuindia.peermentoring.controller;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -20,72 +19,93 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ncuindia.peermentoring.model.RefreshToken;
 import com.ncuindia.peermentoring.model.UserTable;
 import com.ncuindia.peermentoring.payload.request.LoginRequest;
 import com.ncuindia.peermentoring.payload.request.SignUpRequest;
+import com.ncuindia.peermentoring.payload.request.TokenRefreshRequest;
+import com.ncuindia.peermentoring.payload.response.JwtResponse;
 import com.ncuindia.peermentoring.payload.response.MessageResponse;
-import com.ncuindia.peermentoring.payload.response.UserInfoResponse;
+import com.ncuindia.peermentoring.payload.response.TokenRefreshResponse;
 import com.ncuindia.peermentoring.repository.UserTableRepository;
 import com.ncuindia.peermentoring.security.jwt.JwtUtils;
+import com.ncuindia.peermentoring.service.impl.RefreshTokenServiceImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    AuthenticationManager authenticationManager;
+        @Autowired
+        AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserTableRepository userTableRepository;
+        @Autowired
+        UserTableRepository userTableRepository;
 
-    @Autowired
-    PasswordEncoder encoder;
+        @Autowired
+        PasswordEncoder encoder;
 
-    @Autowired
-    JwtUtils jwtUtils;
+        @Autowired
+        JwtUtils jwtUtils;
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        @Autowired
+        RefreshTokenServiceImpl refreshTokenServiceImpl;
 
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
-                        loginRequest.getPassword()));
+        @PostMapping("/signin")
+        public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                Authentication authentication = authenticationManager
+                                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
+                                                loginRequest.getPassword()));
 
-        UserTable userDetails = (UserTable) authentication.getPrincipal();
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
-
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
-
-        String role = roles.get(0);
-
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new UserInfoResponse(
-                        userDetails.getEmailId(),
-                        role));
-    }
-
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if (userTableRepository.existsByEmailId(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+                UserTable userDetails = (UserTable) authentication.getPrincipal();
+                String accessToken = jwtUtils.generateJwtToken(userDetails);
+                RefreshToken refreshToken = refreshTokenServiceImpl.createRefreshToken(userDetails.getEmailId());
+                return ResponseEntity.ok(new JwtResponse(accessToken, userDetails.getEmailId(), userDetails.getRole(),
+                                refreshToken.getToken()));
         }
 
-        UserTable userTable = new UserTable(signUpRequest.getEmail(), encoder.encode(
-                signUpRequest.getPassword()), signUpRequest.getRole());
+        @PostMapping("/signup")
+        public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+                if (userTableRepository.existsByEmailId(signUpRequest.getEmail())) {
+                        return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+                }
 
-        userTableRepository.save(userTable);
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
-    }
+                UserTable userTable = new UserTable(signUpRequest.getEmail(), encoder.encode(
+                                signUpRequest.getPassword()), signUpRequest.getRole());
 
-    @PostMapping("/signout")
-    public ResponseEntity<?> logoutUser() {
-            ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                            .body(new MessageResponse("You've been signed out!"));
-    }
+                userTableRepository.save(userTable);
+                return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        }
+
+        @PostMapping("/refreshtoken")
+        public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+                try {
+                        String requestRefreshToken = request.getRefreshToken();
+
+                        final Optional<RefreshToken> refershToken = refreshTokenServiceImpl
+                                        .findByToken(requestRefreshToken);
+                        if (refershToken.isPresent()) {
+                                RefreshToken currRefreshToken = refershToken.get();
+                                if (refreshTokenServiceImpl.verifyExpiration(currRefreshToken) != null) {
+                                        UserTable userTable = currRefreshToken.getUser();
+                                        String token = jwtUtils.generateTokenFromUsername(userTable.getEmailId());
+                                        return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
+                                }
+
+                        }
+                } catch (Exception e) {
+                        throw e;
+                }
+
+                return ResponseEntity.ok(new MessageResponse("No referesh Token found"));
+        }
+
+        @PostMapping("/signout")
+        public ResponseEntity<?> logoutUser() {
+                ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .body(new MessageResponse("You've been signed out!"));
+        }
 }
