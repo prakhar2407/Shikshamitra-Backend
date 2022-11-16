@@ -5,8 +5,6 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -104,8 +102,10 @@ public class AuthController {
 
         @PostMapping("/signout")
         public ResponseEntity<?> logoutUser() {
-                ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                                .body(new MessageResponse("You've been signed out!"));
+                UserTable userDetails = (UserTable) SecurityContextHolder.getContext().getAuthentication()
+                                .getPrincipal();
+                String emailId = userDetails.getEmailId();
+                refreshTokenServiceImpl.deleteByUserId(emailId);
+                return ResponseEntity.ok(new MessageResponse("Log out successful!"));
         }
 }
