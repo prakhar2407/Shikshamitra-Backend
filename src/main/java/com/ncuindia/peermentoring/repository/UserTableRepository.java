@@ -11,5 +11,7 @@ import com.ncuindia.peermentoring.model.UserTable;
 public interface UserTableRepository extends JpaRepository<UserTable, String> {
     Optional<UserTable> findByEmailId(String emailId);
 
+    void deleteByEmailId(String emailId);
+
     Boolean existsByEmailId(String email);
 }
